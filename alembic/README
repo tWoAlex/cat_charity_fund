@@ -1,1 +1,24 @@
-Generic single-database configuration with an async dbapi.
+Инициировать Alembic в папке проекта:
+alembic init --template async alembic
+
+Применить все ранее созданные миграции:
+alembic upgrade head
+
+Отменить все миграции:
+alembic downgrade base
+
+Идентификатор текущей миграции:
+alembic current
+
+История миграций:
+alembic history -v
+
+Перевод базы данных в состояние конкретной миграции:
+alembic upgrade {{ ID миграции }}
+
+Применение нескольких миграций:
+alembic upgrade +{{ число }}    # {{ Число }} миграций вперёд
+alembic downgrade -{{ число }}  # {{ Число }} миграций назад
+
+Создать новую миграцию с автоматическим расчётом изменений:
+alembic revision --autogenerate -m "{{ Название миграции }}"

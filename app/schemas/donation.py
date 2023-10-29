@@ -26,4 +26,4 @@ class DonationDBShort(DonationBase):
 
 
 class DonationDBFull(BaseTransactionScheme, DonationBase):
-    pass
+    user_id: int

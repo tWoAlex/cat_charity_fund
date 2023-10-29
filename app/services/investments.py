@@ -16,9 +16,9 @@ def cover_donation(donation: Donation):
 
 async def update_investments(session: AsyncSession):
     projects_select_statement = select(CharityProject).where(
-        CharityProject.fully_invested != True)
+        CharityProject.fully_invested != True) # noqa
     donations_select_statement = select(Donation).where(
-        Donation.fully_invested != True)
+        Donation.fully_invested != True) # noqa
 
     projects = await session.scalars(projects_select_statement)
     projects = projects.all()
@@ -30,10 +30,16 @@ async def update_investments(session: AsyncSession):
 
     while (projects_index < len(projects) and
            donations_index < len(donations)):
-        donation: Donation = donations[donations_index]
         project: CharityProject = projects[projects_index]
-        investable = donation.full_amount - donation.invested_amount
         deficit = project.full_amount - project.invested_amount
+
+        if not deficit:
+            cover_project(project)
+            projects_index += 1
+            continue
+
+        donation: Donation = donations[donations_index]
+        investable = donation.full_amount - donation.invested_amount
 
         if investable > deficit:
             cover_project(project)

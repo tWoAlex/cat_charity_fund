@@ -1,9 +1,6 @@
-# from abc import ABC
 from datetime import datetime as dt
 
 from sqlalchemy import Boolean, Column, DateTime, Integer
-
-# from app.core.db import Base
 
 
 def close_date_update(context):

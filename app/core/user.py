@@ -1,5 +1,4 @@
 from typing import Optional, Union
-from uuid import UUID
 
 from fastapi import Depends, Request
 from fastapi_users import (BaseUserManager,
@@ -33,7 +32,7 @@ auth_backend = AuthenticationBackend(
     name='jwt', transport=bearer_transport, get_strategy=get_jwt_strategy)
 
 
-class UserManager(IntegerIDMixin, BaseUserManager[User, UUID]):
+class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     async def validate_password(self,
                                 password: str,
                                 user: Union[UserCreate, User]) -> None:
@@ -54,7 +53,7 @@ async def get_user_manager(user_db=Depends(get_user_db)):
     yield UserManager(user_db)
 
 
-fastapi__users = FastAPIUsers[User, UUID](
+fastapi__users = FastAPIUsers[User, int](
     get_user_manager, (auth_backend,))
 
 

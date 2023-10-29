@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     app_title: str = 'Бронирование переговорок'
     description: str = 'Организуйте работу!'
-    database_url: str
+    database_url: str = 'sqlite+aiosqlite:///./fastapi.db'
     secret: str = 'SECRET'
     first_superuser_email: Optional[str] = None
     first_superuser_password: Optional[str] = None

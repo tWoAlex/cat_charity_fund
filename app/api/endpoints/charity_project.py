@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (check_charity_project_exist,
                                 check_charity_project_deletable,
+                                check_charity_project_same_name,
                                 check_charity_project_updatable)
 from app.core.db import get_async_session
 from app.core.user import current_superuser
@@ -29,6 +30,7 @@ async def get_all_projects(session: AsyncSession = Depends(get_async_session)):
              dependencies=(Depends(current_superuser),))
 async def create_project(project_in: CharityProjectCreate,
                          session: AsyncSession = Depends(get_async_session)):
+    await check_charity_project_same_name(project_in.name, session)
     project = await charity_project_crud.create(project_in, session)
     await update_investments(session)
     await session.refresh(project)
@@ -37,22 +39,20 @@ async def create_project(project_in: CharityProjectCreate,
 
 @router.patch('/{project_id}', name='Обновить проект',
               response_model=CharityProjectDB,
-              response_model_exclude_none=True,
               dependencies=(Depends(current_superuser),))
 async def update_project(project_id: int,
                          project_in: CharityProjectUpdate,
                          session: AsyncSession = Depends(get_async_session)):
     db_project = await check_charity_project_exist(project_id, session)
-    check_charity_project_updatable(db_project, project_in)
+    await check_charity_project_updatable(db_project, project_in, session)
     db_project = await charity_project_crud.update(db_project, project_in, session)
     await update_investments(session)
-    session.refresh(db_project)
+    await session.refresh(db_project)
     return db_project
 
 
 @router.delete('/{project_id}', name='Удалить проект',
                response_model=CharityProjectDB,
-               response_model_exclude_none=True,
                dependencies=(Depends(current_superuser),))
 async def delete_project(project_id: int,
                          session: AsyncSession = Depends(get_async_session)):

@@ -3,7 +3,6 @@ from typing import Optional
 from pydantic import BaseModel, Extra, validator
 
 from app.models.charity_project import NAME_MAX_LENGTH
-
 from . import BaseTransactionScheme
 
 
@@ -35,7 +34,7 @@ class CharityProjectCreate(CharityProjectBase):
     @validator('full_amount')
     def check_positive_amount(cls, value):
         if not (value > 0):
-            raise ValueError('Нельзя внести отрицательное пожертвование! 😿')
+            raise ValueError('Нельзя внести отрицательное пожертвование!')
         return value
 
 

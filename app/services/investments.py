@@ -1,7 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import CharityProject, Donation
+from app.models import BaseTransaction, CharityProject, Donation
 
 
 def cover_project(project: CharityProject):
@@ -14,20 +14,21 @@ def cover_donation(donation: Donation):
     donation.fully_invested = True
 
 
-async def update_investments(session: AsyncSession):
+async def uncovered_transactions(
+        session: AsyncSession) -> (list[CharityProject], list[Donation]):
     projects_select_statement = select(CharityProject).where(
         CharityProject.fully_invested != True) # noqa
     donations_select_statement = select(Donation).where(
         Donation.fully_invested != True) # noqa
 
     projects = await session.scalars(projects_select_statement)
-    projects = projects.all()
-    projects_index = 0
-
     donations = await session.scalars(donations_select_statement)
-    donations = donations.all()
-    donations_index = 0
+    return projects.all(), donations.all()
 
+
+def mutual_coverage(projects: list[CharityProject],
+                    donations: list[Donation]):
+    projects_index, donations_index = 0, 0
     while (projects_index < len(projects) and
            donations_index < len(donations)):
         project: CharityProject = projects[projects_index]
@@ -54,6 +55,16 @@ async def update_investments(session: AsyncSession):
             cover_project(project)
             donations_index += 1
             projects_index += 1
-    session.add_all(donations)
-    session.add_all(projects)
+
+
+async def update_objects(objects_lists: list[BaseTransaction],
+                         session: AsyncSession):
+    for object_list in objects_lists:
+        session.add_all(object_list)
     await session.commit()
+
+
+async def update_investments(session: AsyncSession):
+    projects, donations = await uncovered_transactions(session)
+    mutual_coverage(projects, donations)
+    await update_objects([projects, donations], session)
